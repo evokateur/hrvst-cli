@@ -63,10 +63,12 @@ export async function getConfig(): Promise<Config> {
 
     const parsedConfig = JSON.parse(configData);
 
+    const { accessToken, accountId, ...restConfig } = parsedConfig;
+
     return {
       accessToken: credentials.accessToken,
       accountId: credentials.accountId,
-      accountConfig: parsedConfig.accountConfig || {},
+      ...restConfig,
     };
   } catch (error) {
     throw new ConfigNotFoundError();
@@ -82,7 +84,7 @@ export async function saveConfig(config: Partial<Config>): Promise<void> {
 
   try {
     const existing = await getConfig();
-    const { accessToken: _, accountId: __, ...existingRest } = existing;
+    const { accessToken, accountId, ...existingRest } = existing;
     await fs.promises.writeFile(
       await configPath(),
       JSON.stringify({ ...existingRest, ...rest }),
