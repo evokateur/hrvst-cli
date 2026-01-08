@@ -38,7 +38,6 @@ const shouldCompleteAlias = (
 };
 
 yargs(hideBin(process.argv))
-  .scriptName("hrvst")
   .command([...(commands as CommandModule[]), ...generatedCommands])
   .demandCommand()
   .recommendCommands()
