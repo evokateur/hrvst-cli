@@ -1,4 +1,5 @@
 import fs from "fs";
+import _ from "lodash";
 import ospath from "ospath";
 import path from "path";
 
@@ -39,6 +40,14 @@ export async function saveConfig(config: Partial<Config>): Promise<void> {
   } catch (error) {
     await fs.promises.writeFile(await configPath(), JSON.stringify(config));
   }
+}
+
+export async function getAliasNames(): Promise<string[]> {
+  const config = await getConfig();
+  const aliases =
+    _.get(config, `accountConfig.${config.accountId}.aliases`) || {};
+
+  return Object.keys(aliases);
 }
 
 async function configPath(): Promise<string> {
