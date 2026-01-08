@@ -5,15 +5,12 @@ import yargs, { Arguments, CommandModule } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { getAliasNames } from "./utils/config";
 import { failHandler } from "./utils/error";
+import { isCompletionMode } from "./utils/runtime";
 import updateNotifier from "./utils/update-notifier";
 import { commands } from "./commands";
 import { commands as generatedCommands } from "./generated-commands";
 
-const shouldSkipUpdateNotifier =
-  process.argv.includes("--get-yargs-completions") ||
-  process.argv.includes("completion");
-
-if (!shouldSkipUpdateNotifier) {
+if (!isCompletionMode()) {
   updateNotifier();
 }
 
