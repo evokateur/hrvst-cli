@@ -17,88 +17,27 @@ if (!shouldSkipUpdateNotifier) {
   updateNotifier();
 }
 
-const getCompletionCommandPath = (
-  completionArguments: Arguments,
-): string[] => {
-  const commandPath = completionArguments._.map((argument) =>
-    String(argument),
-  );
-  const commandPrefix = completionArguments.$0
-    ? String(completionArguments.$0)
-    : "";
-  const commandNamesToStrip = new Set([commandPrefix, "hrvst"]);
+const shouldCompleteAlias = (
+  current: string,
+  argv: Arguments,
+): boolean => {
+  // const normalizedCurrentWord = getNormalizedCurrentWord(current);
+  const normalizedCurrentWord = current || "";
 
-  if (commandNamesToStrip.has(commandPath[0])) {
-    return commandPath.slice(1);
+  if (argv._[1] === "start" && argv._.length === 3) {
+    return true;
   }
-
-  return commandPath;
-};
-
-const getNormalizedCurrentWord = (currentWord: string): string => {
-  const completionLine = process.env.COMP_LINE;
-  const completionPoint = process.env.COMP_POINT
-    ? Number(process.env.COMP_POINT)
-    : Number.NaN;
 
   if (
-    completionLine &&
-    Number.isFinite(completionPoint) &&
-    completionPoint === completionLine.length &&
-    completionLine.endsWith(" ")
+    argv._[1] === "log" &&
+    !isNaN(Number(argv._[2])) &&
+    argv._.length === 4
   ) {
-    return "";
+    return true;
   }
 
-  return currentWord || "";
-};
-
-const shouldCompleteAlias = (
-  currentWord: string,
-  completionArguments: Arguments,
-): boolean => {
-  const normalizedCurrentWord = getNormalizedCurrentWord(currentWord);
-
-  if (normalizedCurrentWord.startsWith("-")) {
-    return false;
-  }
-
-  const commandPath = getCompletionCommandPath(completionArguments);
-
-  if (commandPath[0] === "start") {
-    if (commandPath.length === 1 && normalizedCurrentWord === "start") {
-      return false;
-    }
-
-    if (commandPath.length === 1) {
-      return true;
-    }
-
-    return commandPath.length === 2 && normalizedCurrentWord.length > 0;
-  }
-
-  if (commandPath[0] === "log") {
-    if (commandPath.length === 1 && normalizedCurrentWord === "log") {
-      return false;
-    }
-
-    if (commandPath.length === 2) {
-      return true;
-    }
-
-    return commandPath.length === 3 && normalizedCurrentWord.length > 0;
-  }
-
-  if (commandPath[0] === "alias" && commandPath[1] === "delete") {
-    if (commandPath.length === 2 && normalizedCurrentWord === "delete") {
-      return false;
-    }
-
-    if (commandPath.length === 2) {
-      return true;
-    }
-
-    return commandPath.length === 3 && normalizedCurrentWord.length > 0;
+  if (argv._[1] === "alias" && argv._[2] === "delete" && argv._.length === 4) {
+    return true;
   }
 
   return false;
@@ -113,19 +52,20 @@ yargs(hideBin(process.argv))
   .completion(
     "completion",
     "Generate shell completion script",
-    (currentWord, completionArguments, defaultCompletion, done) => {
-      const normalizedCurrentWord = getNormalizedCurrentWord(currentWord);
-      if (!shouldCompleteAlias(currentWord, completionArguments)) {
-        done([]);
-        return;
+    (current, argv, completionFilter, done) => {
+      require('fs').appendFileSync('/tmp/completion.log', 'argv: ' + JSON.stringify(argv) + '\n');
+      require('fs').appendFileSync('/tmp/completion.log', 'current: ' + JSON.stringify(current) + '\n');
+      if (shouldCompleteAlias(current, argv)) {
+        void getAliasNames().then((aliasNames) => {
+          const matchingAliases = aliasNames.filter((aliasName) =>
+            aliasName.startsWith(current),
+          );
+          done(matchingAliases);
+        });
+      } else {
+        return completionFilter();
       }
 
-      void getAliasNames().then((aliasNames) => {
-        const matchingAliases = aliasNames.filter((aliasName) =>
-          aliasName.startsWith(normalizedCurrentWord),
-        );
-        done(matchingAliases);
-      });
     },
   )
   .help()
