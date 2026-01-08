@@ -21,18 +21,12 @@ const shouldCompleteAlias = (
   current: string,
   argv: Arguments,
 ): boolean => {
-  // const normalizedCurrentWord = getNormalizedCurrentWord(current);
-  const normalizedCurrentWord = current || "";
 
   if (argv._[1] === "start" && argv._.length === 3) {
     return true;
   }
 
-  if (
-    argv._[1] === "log" &&
-    !isNaN(Number(argv._[2])) &&
-    argv._.length === 4
-  ) {
+  if ( argv._[1] === "log" && !isNaN(Number(argv._[2])) && argv._.length === 4) {
     return true;
   }
 
@@ -65,7 +59,6 @@ yargs(hideBin(process.argv))
       } else {
         return completionFilter();
       }
-
     },
   )
   .help()
