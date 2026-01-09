@@ -17,82 +17,66 @@ export interface Alias {
   taskId: number;
 }
 
-interface CredentialsConfig {
+interface SessionConfig {
   accessToken: string;
   accountId: string;
 }
 
 export class ConfigNotFoundError extends Error {}
 
-async function credentialsPath(): Promise<string> {
+let needsMigration = false;
+
+async function sessionPath(): Promise<string> {
   const dir = path.join(ospath.home(), ".hrvst");
 
   if (!fs.existsSync(dir)) {
     await fs.promises.mkdir(dir);
   }
 
-  return path.join(dir, "credentials.json");
+  return path.join(dir, "session.json");
 }
 
-async function getCredentials(): Promise<CredentialsConfig> {
-  const data = await fs.promises.readFile(await credentialsPath(), "utf-8");
-  return JSON.parse(data);
-}
-
-async function saveCredentials(credentials: Partial<CredentialsConfig>): Promise<void> {
+async function readSessionFromConfigFile(): Promise<SessionConfig | null> {
   try {
-    const existing = await getCredentials();
+    const configData = await fs.promises.readFile(await configPath(), "utf-8");
+    const parsed = JSON.parse(configData);
+    if (parsed.accessToken && parsed.accountId) {
+      return {
+        accessToken: parsed.accessToken,
+        accountId: parsed.accountId,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function readSessionFile(): Promise<SessionConfig> {
+  try {
+    const data = await fs.promises.readFile(await sessionPath(), "utf-8");
+    return JSON.parse(data);
+  } catch {
+    const session = await readSessionFromConfigFile();
+    if (session) {
+      needsMigration = true;
+      return session;
+    }
+    throw new Error("No session found");
+  }
+}
+
+async function writeSessionFile(session: Partial<SessionConfig>): Promise<void> {
+  try {
+    const existing = await readSessionFile();
     await fs.promises.writeFile(
-      await credentialsPath(),
-      JSON.stringify({ ...existing, ...credentials }),
+      await sessionPath(),
+      JSON.stringify({ ...existing, ...session }),
     );
   } catch {
     await fs.promises.writeFile(
-      await credentialsPath(),
-      JSON.stringify(credentials),
-    );
-  }
-}
-
-export async function getConfig(): Promise<Config> {
-  try {
-    const [credentials, configData] = await Promise.all([
-      getCredentials(),
-      fs.promises.readFile(await configPath(), "utf-8").catch(() => "{}"),
-    ]);
-
-    const parsedConfig = JSON.parse(configData);
-
-    const { accessToken, accountId, ...restConfig } = parsedConfig;
-
-    return {
-      accessToken: credentials.accessToken,
-      accountId: credentials.accountId,
-      ...restConfig,
-    };
-  } catch (error) {
-    throw new ConfigNotFoundError();
-  }
-}
-
-export async function saveConfig(config: Partial<Config>): Promise<void> {
-  const { accessToken, accountId, ...rest } = config;
-
-  if (accessToken !== undefined || accountId !== undefined) {
-    await saveCredentials({ accessToken, accountId });
-  }
-
-  try {
-    const existing = await getConfig();
-    const { accessToken, accountId, ...existingRest } = existing;
-    await fs.promises.writeFile(
-      await configPath(),
-      JSON.stringify({ ...existingRest, ...rest }),
-    );
-  } catch {
-    await fs.promises.writeFile(
-      await configPath(),
-      JSON.stringify(rest),
+      await sessionPath(),
+      JSON.stringify(session),
     );
   }
 }
@@ -105,4 +89,59 @@ async function configPath(): Promise<string> {
   }
 
   return path.join(dir, "config.json");
+}
+
+async function readConfigFile(): Promise<any> {
+  const data = await fs.promises.readFile(await configPath(), "utf-8").catch(() => "{}");
+  return JSON.parse(data);
+}
+
+async function writeConfigFile(config: any): Promise<void> {
+  await fs.promises.writeFile(
+    await configPath(),
+    JSON.stringify(config),
+  );
+}
+
+export async function getConfig(): Promise<Config> {
+  try {
+    const [session, parsedConfig] = await Promise.all([
+      readSessionFile(),
+      readConfigFile(),
+    ]);
+
+    const { accessToken, accountId, ...restConfig } = parsedConfig;
+
+    const config = {
+      accessToken: session.accessToken,
+      accountId: session.accountId,
+      ...restConfig,
+    };
+
+    if (needsMigration) {
+      await writeSessionFile(session);
+      await writeConfigFile(restConfig);
+      needsMigration = false;
+    }
+
+    return config;
+  } catch (error) {
+    throw new ConfigNotFoundError();
+  }
+}
+
+export async function saveConfig(config: Partial<Config>): Promise<void> {
+  const { accessToken, accountId, ...rest } = config;
+
+  if (accessToken !== undefined || accountId !== undefined) {
+    await writeSessionFile({ accessToken, accountId });
+  }
+
+  try {
+    const existing = await getConfig();
+    const { accessToken, accountId, ...existingRest } = existing;
+    await writeConfigFile({ ...existingRest, ...rest });
+  } catch {
+    await writeConfigFile(rest);
+  }
 }
