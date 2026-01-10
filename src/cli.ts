@@ -1,12 +1,9 @@
 #!/usr/bin/env node
 
 import chalk from "chalk";
-import fs from "fs";
-import _ from "lodash";
-import ospath from "ospath";
-import path from "path";
 import yargs, { Arguments, CommandModule } from "yargs";
 import { hideBin } from "yargs/helpers";
+import { getAliasNamesSync } from "./utils/config";
 import { failHandler } from "./utils/error";
 import { isCompletionMode } from "./utils/runtime";
 import updateNotifier from "./utils/update-notifier";
@@ -49,10 +46,7 @@ yargs(hideBin(process.argv))
       if (shouldCompleteAlias(current, argv)) {
         completionFilter(() => {
           try {
-            const configPath = path.join(ospath.home(), ".hrvst", "config.json");
-            const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-            const aliases = _.get(config, `accountConfig.${config.accountId}.aliases`) || {};
-            done(Object.keys(aliases));
+            done(getAliasNamesSync());
           } catch {
             done([]);
           }
