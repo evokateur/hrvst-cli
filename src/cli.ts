@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
 import chalk from "chalk";
+import fs from "fs";
+import _ from "lodash";
+import ospath from "ospath";
+import path from "path";
 import yargs, { Arguments, CommandModule } from "yargs";
 import { hideBin } from "yargs/helpers";
-import { getAliasNames } from "./utils/config";
 import { failHandler } from "./utils/error";
 import { isCompletionMode } from "./utils/runtime";
 import updateNotifier from "./utils/update-notifier";
@@ -23,7 +26,7 @@ const shouldCompleteAlias = (
     return true;
   }
 
-  if ( argv._[1] === "log" && !isNaN(Number(argv._[2])) && argv._.length === 4) {
+  if (argv._[1] === "log" && !isNaN(Number(argv._[2])) && argv._.length === 4) {
     return true;
   }
 
@@ -46,14 +49,18 @@ yargs(hideBin(process.argv))
       require('fs').appendFileSync('/tmp/completion.log', 'argv: ' + JSON.stringify(argv) + '\n');
       require('fs').appendFileSync('/tmp/completion.log', 'current: ' + JSON.stringify(current) + '\n');
       if (shouldCompleteAlias(current, argv)) {
-        void getAliasNames().then((aliasNames) => {
-          const matchingAliases = aliasNames.filter((aliasName) =>
-            aliasName.startsWith(current),
-          );
-          done(matchingAliases);
+        completionFilter(() => {
+          try {
+            const configPath = path.join(ospath.home(), ".hrvst", "config.json");
+            const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+            const aliases = _.get(config, `accountConfig.${config.accountId}.aliases`) || {};
+            done(Object.keys(aliases));
+          } catch {
+            done([]);
+          }
         });
       } else {
-        return completionFilter();
+        completionFilter();
       }
     },
   )

@@ -42,14 +42,6 @@ export async function saveConfig(config: Partial<Config>): Promise<void> {
   }
 }
 
-export async function getAliasNames(): Promise<string[]> {
-  const config = await getConfig();
-  const aliases =
-    _.get(config, `accountConfig.${config.accountId}.aliases`) || {};
-
-  return Object.keys(aliases);
-}
-
 async function configPath(): Promise<string> {
   const dir = path.join(ospath.home(), ".hrvst");
 
