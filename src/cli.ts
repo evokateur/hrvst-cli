@@ -46,8 +46,6 @@ yargs(hideBin(process.argv))
     "completion",
     "Generate shell completion script",
     (current, argv, completionFilter, done) => {
-      require('fs').appendFileSync('/tmp/completion.log', 'argv: ' + JSON.stringify(argv) + '\n');
-      require('fs').appendFileSync('/tmp/completion.log', 'current: ' + JSON.stringify(current) + '\n');
       if (shouldCompleteAlias(current, argv)) {
         completionFilter(() => {
           try {
