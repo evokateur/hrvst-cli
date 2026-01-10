@@ -1,4 +1,4 @@
-export function isCompletionMode(): boolean {
+export function inCompletionMode(): boolean {
   return (
     process.env.YARGS_COMPLETION === "1" ||
     process.argv.includes("--get-yargs-completions") ||

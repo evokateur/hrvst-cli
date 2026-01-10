@@ -5,12 +5,12 @@ import yargs, { Arguments, CommandModule } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { getAliasNamesSync } from "./utils/config";
 import { failHandler } from "./utils/error";
-import { isCompletionMode } from "./utils/runtime";
+import { inCompletionMode } from "./utils/runtime";
 import updateNotifier from "./utils/update-notifier";
 import { commands } from "./commands";
 import { commands as generatedCommands } from "./generated-commands";
 
-if (!isCompletionMode()) {
+if (!inCompletionMode()) {
   updateNotifier();
 }
 

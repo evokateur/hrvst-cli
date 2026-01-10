@@ -1,5 +1,5 @@
 import ora, { Options } from "ora";
-import { isCompletionMode } from "./runtime.js";
+import { inCompletionMode } from "./runtime.js";
 
 /**
  * Display spinner while the `worker` function is executing
@@ -12,7 +12,7 @@ export default async function <T>(
   worker: () => Promise<T>,
   options: Options = {},
 ): Promise<T> {
-  if (isCompletionMode()) {
+  if (inCompletionMode()) {
     return await worker();
   }
   const spinner = ora({
