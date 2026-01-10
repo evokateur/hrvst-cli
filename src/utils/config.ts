@@ -1,5 +1,4 @@
 import fs from "fs";
-import _ from "lodash";
 import ospath from "ospath";
 import path from "path";
 
