@@ -57,9 +57,13 @@ async function writeSessionFile(session: Partial<SessionConfig>): Promise<void> 
 
 export function getAliasNamesSync(): string[] {
   try {
+    const sessionFilePath = path.join(ospath.home(), ".hrvst", "session.json");
     const configFilePath = path.join(ospath.home(), ".hrvst", "config.json");
+
+    const session = JSON.parse(fs.readFileSync(sessionFilePath, "utf-8"));
     const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
-    const aliases = _.get(config, `accountConfig.${config.accountId}.aliases`) || {};
+
+    const aliases = _.get(config, `accountConfig.${session.accountId}.aliases`) || {};
     return Object.keys(aliases);
   } catch (error) {
     throw new ConfigNotFoundError();
