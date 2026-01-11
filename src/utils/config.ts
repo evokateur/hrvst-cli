@@ -24,8 +24,6 @@ interface SessionConfig {
 
 export class ConfigNotFoundError extends Error {}
 
-let needsMigration = false;
-
 async function sessionPath(): Promise<string> {
   const dir = path.join(ospath.home(), ".hrvst");
 
@@ -36,34 +34,9 @@ async function sessionPath(): Promise<string> {
   return path.join(dir, "session.json");
 }
 
-async function readSessionFromConfigFile(): Promise<SessionConfig | null> {
-  try {
-    const configData = await fs.promises.readFile(await configPath(), "utf-8");
-    const parsed = JSON.parse(configData);
-    if (parsed.accessToken && parsed.accountId) {
-      return {
-        accessToken: parsed.accessToken,
-        accountId: parsed.accountId,
-      };
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 async function readSessionFile(): Promise<SessionConfig> {
-  try {
-    const data = await fs.promises.readFile(await sessionPath(), "utf-8");
-    return JSON.parse(data);
-  } catch {
-    const session = await readSessionFromConfigFile();
-    if (session) {
-      needsMigration = true;
-      return session;
-    }
-    throw new Error("No session found");
-  }
+  const data = await fs.promises.readFile(await sessionPath(), "utf-8");
+  return JSON.parse(data);
 }
 
 async function writeSessionFile(session: Partial<SessionConfig>): Promise<void> {
@@ -112,19 +85,11 @@ export async function getConfig(): Promise<Config> {
 
     const { accessToken, accountId, ...restConfig } = parsedConfig;
 
-    const config = {
+    return {
       accessToken: session.accessToken,
       accountId: session.accountId,
       ...restConfig,
     };
-
-    if (needsMigration) {
-      await writeSessionFile(session);
-      await writeConfigFile(restConfig);
-      needsMigration = false;
-    }
-
-    return config;
   } catch (error) {
     throw new ConfigNotFoundError();
   }
