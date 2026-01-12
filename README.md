@@ -27,6 +27,21 @@ hrvst login
 
 You’ll be prompted to launch your browser and log in to Harvest to grant Harvest CLI access to your account.
 
+### Alias completion
+
+For alias (and command) completion to work you'll need the output of `hrvst completion` sourced in your `.zshrc` or `.bashrc` file. 
+You can either follow the directions in the output (`hrvst >> .zshrc`) appending it directly, or send the output to another file and source it, e.g:
+
+```zsh
+source "$HOME/.config/shell/functions/hrvst-completion.zsh"
+```
+
+or
+
+```bash
+source "$HOME/.config/shell/functions/hrvst-completion.bash"
+```
+
 ## CLI Command Reference
 
 <pre>
