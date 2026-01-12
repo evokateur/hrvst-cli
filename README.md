@@ -30,13 +30,14 @@ You’ll be prompted to launch your browser and log in to Harvest to grant Harve
 ### Alias completion
 
 For alias (and command) completion to work you'll need the output of `hrvst completion` sourced in your `.zshrc` or `.bashrc` file. 
-You can either follow the directions in the output (`hrvst >> .zshrc`) appending it directly, or send the output to another file and source it, e.g:
+You can either follow the directions in the output (`hrvst completion >> ~/.zshrc`) appending it directly, or send the output to another file and source it, e.g:
 
+In `~/.zshrc`
 ```zsh
 source "$HOME/.config/shell/functions/hrvst-completion.zsh"
 ```
 
-or
+or `~/.bashrc`
 
 ```bash
 source "$HOME/.config/shell/functions/hrvst-completion.bash"
