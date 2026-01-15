@@ -5,10 +5,17 @@ import yargs, { Arguments, CommandModule } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { getAliasNamesSync } from "./utils/config";
 import { failHandler } from "./utils/error";
-import { inCompletionMode } from "./utils/runtime";
 import updateNotifier from "./utils/update-notifier";
 import { commands } from "./commands";
 import { commands as generatedCommands } from "./generated-commands";
+
+function inCompletionMode(): boolean {
+  return (
+    process.env.YARGS_COMPLETION === "1" ||
+    process.argv.includes("--get-yargs-completions") ||
+    process.env.HRVST_COMPLETION === "1"
+  );
+}
 
 if (!inCompletionMode()) {
   updateNotifier();
