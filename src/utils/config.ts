@@ -18,7 +18,7 @@ export interface Alias {
   taskId: number;
 }
 
-export class ConfigNotFoundError extends Error {}
+export class ConfigNotFoundError extends Error { }
 
 export async function getConfig(): Promise<Config> {
   try {
@@ -49,7 +49,7 @@ export function getAliasNamesSync(): string[] {
     const aliases =
       _.get(config, `accountConfig.${config.accountId}.aliases`) || {};
     return Object.keys(aliases);
-  } catch (error) {
+  } catch {
     throw new ConfigNotFoundError();
   }
 }
