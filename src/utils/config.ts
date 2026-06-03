@@ -46,7 +46,8 @@ export function getAliasNamesSync(): string[] {
   try {
     const configFilePath = path.join(ospath.home(), ".hrvst", "config.json");
     const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
-    const aliases = _.get(config, `accountConfig.${config.accountId}.aliases`) || {};
+    const aliases =
+      _.get(config, `accountConfig.${config.accountId}.aliases`) || {};
     return Object.keys(aliases);
   } catch (error) {
     throw new ConfigNotFoundError();

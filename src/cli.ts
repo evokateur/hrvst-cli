@@ -21,11 +21,7 @@ if (!inCompletionMode()) {
   updateNotifier();
 }
 
-const shouldCompleteAlias = (
-  current: string,
-  argv: Arguments,
-): boolean => {
-
+const shouldCompleteAlias = (current: string, argv: Arguments): boolean => {
   if (argv._[1] === "start" && argv._.length === 3) {
     return true;
   }
