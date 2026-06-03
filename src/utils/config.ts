@@ -1,4 +1,5 @@
 import fs from "fs";
+import _ from "lodash";
 import ospath from "ospath";
 import path from "path";
 
@@ -38,6 +39,17 @@ export async function saveConfig(config: Partial<Config>): Promise<void> {
     );
   } catch {
     await fs.promises.writeFile(await configPath(), JSON.stringify(config));
+  }
+}
+
+export function getAliasNamesSync(): string[] {
+  try {
+    const configFilePath = path.join(ospath.home(), ".hrvst", "config.json");
+    const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
+    const aliases = _.get(config, `accountConfig.${config.accountId}.aliases`) || {};
+    return Object.keys(aliases);
+  } catch (error) {
+    throw new ConfigNotFoundError();
   }
 }
 
