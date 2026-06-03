@@ -18,7 +18,7 @@ export interface Alias {
   taskId: number;
 }
 
-export class ConfigNotFoundError extends Error { }
+export class ConfigNotFoundError extends Error {}
 
 export async function getConfig(): Promise<Config> {
   try {
