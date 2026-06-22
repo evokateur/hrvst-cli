@@ -21,11 +21,7 @@ if (!inCompletionMode()) {
   updateNotifier();
 }
 
-const shouldCompleteAlias = (
-  current: string,
-  argv: Arguments,
-): boolean => {
-
+const shouldCompleteAlias = (current: string, argv: Arguments): boolean => {
   if (argv._[1] === "start" && argv._.length === 3) {
     return true;
   }
@@ -69,4 +65,5 @@ yargs(hideBin(process.argv))
       "For more information, see: https://kgajera.github.io/hrvst-cli\n",
     ),
   )
-  .fail(failHandler).argv;
+  .fail(failHandler)
+  .parse();
